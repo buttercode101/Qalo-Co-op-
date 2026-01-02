@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Qalo Suite | Co-operative Wealth Intelligence</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#800080" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <title>Qalo Suite | Institutional Co-operative Intelligence</title>
     
     <!-- Professional Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,9 +41,9 @@
               display: ['Poppins', 'sans-serif']
             },
             boxShadow: {
-              'premium': '0 20px 50px -12px rgba(128, 0, 128, 0.15)',
+              'premium': '0 25px 60px -15px rgba(128, 0, 128, 0.2)',
               'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
-              'card': '0 10px 30px -5px rgba(0, 0, 0, 0.05)'
+              'card': '0 15px 35px -5px rgba(0, 0, 0, 0.1)'
             }
           }
         }
@@ -55,58 +60,59 @@
       
       body {
         -webkit-tap-highlight-color: transparent;
-        transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         padding: var(--sat) var(--sar) var(--sab) var(--sal);
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         overflow-x: hidden;
       }
 
-      .glass-effect {
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
       }
 
-      /* High Fidelity Input Styling */
+      .dark .glass-card {
+        background: rgba(1, 4, 9, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Premium Slider */
       input[type="range"] {
         -webkit-appearance: none;
-        width: 100%;
-        height: 8px;
+        height: 6px;
+        background: #e2e8f0;
         border-radius: 99px;
-        background: #f1f5f9;
         outline: none;
       }
 
-      .dark input[type="range"] {
-        background: #1e293b;
-      }
+      .dark input[type="range"] { background: #1e293b; }
 
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        appearance: none;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
+        width: 28px;
+        height: 28px;
         background: #ffffff;
-        cursor: pointer;
         border: 2px solid #800080;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        transition: transform 0.2s ease;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.1);
-      }
+      input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+      input[type="range"]::-webkit-slider-thumb:active { transform: scale(0.95); }
 
       @media (min-width: 1024px) {
-        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-          background: #e2e8f0; 
+          background: #cbd5e1; 
           border-radius: 10px; 
-          border: 3px solid transparent;
           background-clip: content-box;
+          border: 2px solid transparent;
         }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
       }
     </style>
 
@@ -125,7 +131,7 @@
 }
 </script>
   </head>
-  <body class="bg-slate-50 dark:bg-brand-navy text-slate-900 dark:text-slate-100 antialiased selection:bg-brand-purple/20">
+  <body class="bg-slate-50 dark:bg-brand-navy text-slate-900 dark:text-slate-100 antialiased selection:bg-brand-purple/10">
     <div id="root"></div>
   </body>
 </html>

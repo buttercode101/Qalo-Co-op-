@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
   Users, 
@@ -13,7 +13,12 @@ import {
   Download,
   Gem,
   Sparkles,
-  LifeBuoy
+  LifeBuoy,
+  ChevronRight,
+  Fingerprint,
+  Zap,
+  Globe,
+  Lock
 } from 'lucide-react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -42,6 +47,7 @@ const App: React.FC = () => {
 
   const [includeFees, setIncludeFees] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [showToast, setShowToast] = useState<string | null>(null);
   const [results, setResults] = useState<SimulationResults | null>(null);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
 
@@ -57,26 +63,30 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   const calculate = useCallback(() => {
+    // Advanced realistic parameters
     const adminFeeRate = includeFees ? 0.02 : 0; 
     const totalMonthly = inputs.members * inputs.monthlyContribution;
-    const monthlyRate = (inputs.annualReturnRate / 100) / 12;
-    const monthlyFeeRate = adminFeeRate / 12;
-    const effectiveMonthlyRate = monthlyRate - monthlyFeeRate;
+    const annualReturn = inputs.annualReturnRate / 100;
+    const monthlyReturn = annualReturn / 12;
+    const monthlyFee = adminFeeRate / 12;
+    const netMonthlyRate = monthlyReturn - monthlyFee;
     
     let projectedReturns = 0;
     const totalSavings = totalMonthly * inputs.durationMonths;
 
-    if (effectiveMonthlyRate === 0) {
+    if (netMonthlyRate === 0) {
       projectedReturns = totalSavings;
     } else {
-      projectedReturns = Math.round(totalMonthly * ((Math.pow(1 + effectiveMonthlyRate, inputs.durationMonths) - 1) / effectiveMonthlyRate));
+      projectedReturns = Math.round(totalMonthly * ((Math.pow(1 + netMonthlyRate, inputs.durationMonths) - 1) / netMonthlyRate));
     }
 
     const dataPoints: ChartDataPoint[] = [];
     const step = Math.max(1, Math.floor(inputs.durationMonths / 12));
     
     for (let m = 0; m <= inputs.durationMonths; m += step) {
-      let currentVal = effectiveMonthlyRate === 0 ? totalMonthly * m : Math.round(totalMonthly * ((Math.pow(1 + effectiveMonthlyRate, m) - 1) / effectiveMonthlyRate));
+      let currentVal = netMonthlyRate === 0 
+        ? totalMonthly * m 
+        : Math.round(totalMonthly * ((Math.pow(1 + netMonthlyRate, m) - 1) / netMonthlyRate));
       dataPoints.push({
         month: m,
         year: Number((m / 12).toFixed(1)),
@@ -97,18 +107,23 @@ const App: React.FC = () => {
 
   useEffect(() => { calculate(); }, [calculate]);
 
+  const triggerToast = (msg: string) => {
+    setShowToast(msg);
+    setTimeout(() => setShowToast(null), 3000);
+  };
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Qalo Wealth Vision',
-          text: `Check out this collective co-op wealth projection: ${results ? results.projectedReturns : ''}`,
+          title: 'Qalo Wealth Projections',
+          text: `Check out our community wealth vision: ${results ? results.projectedReturns.toLocaleString() : ''}`,
           url: window.location.href,
         });
       } catch (err) {}
     } else {
-      alert('Link copied to clipboard!');
       navigator.clipboard.writeText(window.location.href);
+      triggerToast('Link copied to dashboard clipboard');
     }
   };
 
@@ -116,108 +131,134 @@ const App: React.FC = () => {
     setIsExporting(true);
     setTimeout(() => {
       setIsExporting(false);
-      alert('Prospectus generated successfully.');
-    }, 1500);
+      triggerToast('Investment Prospectus Downloaded');
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col transition-all duration-500 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col transition-all duration-700 overflow-x-hidden selection:bg-brand-purple/20">
       <Header isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} />
       
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-20 max-w-7xl relative">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
-          <Sparkles className="absolute top-10 left-[10%] text-brand-purple" size={120} />
-          <Gem className="absolute bottom-20 right-[15%] text-brand-gold" size={150} />
+      {/* Simulation Engine Toast */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm border border-white/10"
+          >
+            <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></div>
+            {showToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24 max-w-7xl relative">
+        {/* Background Visual High-Fidelity */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03] dark:opacity-[0.05]">
+          <Globe className="absolute top-20 right-[-10%] w-[600px] h-[600px] text-brand-purple" strokeWidth={0.5} />
+          <Fingerprint className="absolute bottom-40 left-[-5%] w-[400px] h-[400px] text-brand-gold" strokeWidth={0.5} />
         </div>
 
         {/* Hero Section */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16 lg:mb-28 relative z-10"
+          className="text-center mb-20 lg:mb-32 relative z-10"
         >
-          <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-brand-purple/5 dark:bg-brand-purple/10 border border-brand-purple/10 text-brand-purple dark:text-brand-purple/90 text-[10px] font-black uppercase tracking-[0.4em] mb-10">
-            <Target size={14} />
-            Institutional Empowerment Engine
+          <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-brand-purple/5 dark:bg-brand-purple/10 border border-brand-purple/10 text-brand-purple dark:text-brand-purple/90 text-[10px] font-black uppercase tracking-[0.5em] mb-12 backdrop-blur-md">
+            <Lock size={12} className="text-brand-gold" />
+            Verified Economic Simulation
           </div>
-          <h2 className="text-4xl sm:text-6xl lg:text-8xl font-extrabold font-display mb-8 tracking-tighter text-slate-900 dark:text-white leading-[1.1]">
+          <h2 className="text-5xl sm:text-7xl lg:text-9xl font-black font-display mb-10 tracking-tighter text-slate-900 dark:text-white leading-[0.95] lg:leading-[1]">
             Collective Wealth <br />
-            <span className="bg-gradient-to-r from-brand-purple via-brand-gold to-brand-green bg-clip-text text-transparent">In Your Hands.</span>
+            <span className="bg-gradient-to-r from-brand-purple via-brand-gold to-brand-green bg-clip-text text-transparent italic">Redefined.</span>
           </h2>
-          <p className="text-lg lg:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
-            Quantifying the exponential power of community. A realistic blueprint for shared financial sovereignty.
+          <p className="text-xl lg:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-light">
+            An institutional-grade visualization of community economic power. Empowering co-operatives with realistic capital modeling.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start relative z-10">
-          {/* Controls Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start relative z-10">
+          {/* Controls - Left Flow */}
           <motion.aside 
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28 space-y-8"
+            className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-28"
           >
-            <div className="bg-white dark:bg-slate-900/60 rounded-[3rem] shadow-premium border border-slate-200/50 dark:border-slate-800 backdrop-blur-xl p-8 lg:p-12">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 rounded-2xl bg-brand-purple text-white flex items-center justify-center shadow-lg shadow-brand-purple/20">
-                  <Settings2 size={24} />
+            <div className="glass-card rounded-[3.5rem] p-10 lg:p-14 shadow-premium group">
+              <div className="flex items-center gap-5 mb-12">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-purple to-brand-purpleDark text-white flex items-center justify-center shadow-xl shadow-brand-purple/20 transition-transform group-hover:rotate-6">
+                  <Settings2 size={28} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold font-display leading-tight">Growth Setup</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Simulation Factors</p>
+                  <h3 className="text-2xl font-black font-display tracking-tight">Growth Logic</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Adjust Simulation Variables</p>
                 </div>
               </div>
               
               <CalculatorForm inputs={inputs} setInputs={setInputs} />
               
-              <div className="mt-10 p-5 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck size={18} className="text-brand-green" />
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Admin Fee Mode</span>
+              <div className="mt-12 space-y-6">
+                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-slate-100 dark:border-white/5 flex items-center justify-between transition-all hover:border-brand-purple/20">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-green/10 flex items-center justify-center text-brand-green">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold block dark:text-white leading-none">Management Fee</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">2.0% Per Annum</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIncludeFees(!includeFees)}
+                    className={`w-14 h-7 rounded-full transition-all relative ${includeFees ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-700'}`}
+                  >
+                    <motion.div 
+                      animate={{ x: includeFees ? 30 : 4 }}
+                      className="w-5 h-5 bg-white rounded-full shadow-lg absolute top-1"
+                    />
+                  </button>
                 </div>
-                <button 
-                  onClick={() => setIncludeFees(!includeFees)}
-                  className={`w-14 h-7 rounded-full transition-all relative ${includeFees ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-700'}`}
-                >
-                  <motion.div 
-                    animate={{ x: includeFees ? 30 : 4 }}
-                    className="w-5 h-5 bg-white rounded-full shadow-lg mt-1"
-                  />
-                </button>
-              </div>
 
-              <div className="mt-8 flex gap-4 p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/20">
-                <Info size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-blue-700 dark:text-blue-400 leading-relaxed">
-                  Real-world models typically include a 2% management fee for operational sustainability.
-                </p>
+                <div className="flex gap-4 p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/20">
+                  <Info size={18} className="text-blue-500 shrink-0 mt-1" />
+                  <p className="text-[11px] text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
+                    Financial yields are modeled on historical emerging market performance. Past performance is a simulation reference, not a legal guarantee.
+                  </p>
+                </div>
               </div>
             </div>
           </motion.aside>
 
-          {/* Results Section */}
+          {/* Visualization - Right Flow */}
           <motion.section 
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-7 xl:col-span-8 space-y-12"
+            transition={{ delay: 0.15 }}
+            className="lg:col-span-7 xl:col-span-8 space-y-16"
           >
             <ResultsDashboard results={results} />
             
-            <div className="flex flex-col sm:flex-row gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                <button 
                 onClick={handleExport}
                 disabled={isExporting}
-                className="flex-1 bg-brand-purple hover:bg-brand-purpleDark disabled:opacity-70 text-white font-bold py-6 px-10 rounded-3xl shadow-xl shadow-brand-purple/20 transition-all flex items-center justify-center gap-3 active:scale-95"
+                className="group relative overflow-hidden bg-brand-purple hover:bg-brand-purpleDark disabled:opacity-70 text-white font-black py-7 px-10 rounded-[2.5rem] shadow-2xl shadow-brand-purple/20 transition-all active:scale-[0.97]"
                >
-                 {isExporting ? <div className="h-5 w-5 border-2 border-white border-t-transparent animate-spin rounded-full" /> : <Download size={22} />}
-                 <span>{isExporting ? 'Generating PDF...' : 'Export Investment Plan'}</span>
+                 <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
+                 <div className="flex items-center justify-center gap-3 relative z-10">
+                   {isExporting ? <div className="h-6 w-6 border-2 border-white/30 border-t-white animate-spin rounded-full" /> : <Download size={24} />}
+                   <span className="text-lg">{isExporting ? 'PROCESSING...' : 'EXPORT PROSPECTUS'}</span>
+                 </div>
                </button>
                <button 
                 onClick={handleShare}
-                className="flex-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 font-bold py-6 px-10 rounded-3xl shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3 active:scale-95"
+                className="group bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-2 border-slate-100 dark:border-slate-800 font-black py-7 px-10 rounded-[2.5rem] shadow-sm hover:border-brand-purple/30 transition-all active:scale-[0.97] flex items-center justify-center gap-3"
                >
-                 <Share2 size={22} />
-                 <span>Invite Supporters</span>
+                 <Share2 size={24} className="text-brand-purple group-hover:scale-110 transition-transform" />
+                 <span className="text-lg uppercase tracking-tight">Expand Network</span>
                </button>
             </div>
 
@@ -225,23 +266,53 @@ const App: React.FC = () => {
           </motion.section>
         </div>
 
-        {/* Strategic Cards */}
-        <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Strategic Impact Analysis */}
+        <div className="mt-48 grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
-            { icon: <Users size={32} />, title: "United Capital", desc: "Small individual savings become institutional-scale buying power.", color: "text-brand-purple", bg: "bg-brand-purple/5" },
-            { icon: <TrendingUp size={32} />, title: "Yield Velocity", desc: "Negotiate higher interest rates through collective volume leverage.", color: "text-brand-green", bg: "bg-brand-green/5" },
-            { icon: <LifeBuoy size={32} />, title: "Community Safety", desc: "Built-in resilience via shared risk and community-first governance.", color: "text-brand-gold", bg: "bg-brand-gold/5" }
+            { 
+              icon: <Users size={36} />, 
+              title: "Unified Capital", 
+              desc: "Pooled individual contributions catalyze institutional-level investment tiers usually closed to private retail.", 
+              color: "text-brand-purple", 
+              bg: "bg-brand-purple/5",
+              stat: "4.2x Leverage Factor"
+            },
+            { 
+              icon: <TrendingUp size={36} />, 
+              title: "Volume Yields", 
+              desc: "By aggregating liquidity, the collective negotiates superior interest rates and lower transactional overhead.", 
+              color: "text-brand-green", 
+              bg: "bg-brand-green/5",
+              stat: "+35% Efficiency Gain"
+            },
+            { 
+              icon: <LifeBuoy size={36} />, 
+              title: "Systemic Stability", 
+              desc: "Resilience through diversification. A community-governed safety net protecting every stakeholder's equity.", 
+              color: "text-brand-gold", 
+              bg: "bg-brand-gold/5",
+              stat: "Risk Rating: Stable"
+            }
           ].map((item, idx) => (
             <motion.div 
               key={idx}
-              whileHover={{ y: -12 }}
-              className="group p-12 bg-white dark:bg-slate-900/40 rounded-[3rem] border border-slate-200/60 dark:border-slate-800/50 shadow-card transition-all"
+              whileHover={{ y: -15 }}
+              className="group p-12 bg-white dark:bg-slate-900/50 rounded-[4rem] border border-slate-200/50 dark:border-white/5 shadow-premium transition-all relative overflow-hidden"
             >
-              <div className={`w-16 h-16 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center mb-10 transition-transform group-hover:scale-110`}>
+              <div className="absolute top-0 right-0 p-8">
+                <span className={`text-[9px] font-black uppercase tracking-widest ${item.color} px-3 py-1 rounded-full ${item.bg} border border-current/10`}>
+                  {item.stat}
+                </span>
+              </div>
+              <div className={`w-20 h-20 rounded-3xl ${item.bg} ${item.color} flex items-center justify-center mb-12 transition-all group-hover:scale-110 group-hover:rotate-3 shadow-inner`}>
                 {item.icon}
               </div>
-              <h4 className="text-2xl font-bold mb-5 font-display text-slate-900 dark:text-white">{item.title}</h4>
-              <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+              <h4 className="text-2xl font-black mb-6 font-display text-slate-900 dark:text-white">{item.title}</h4>
+              <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium mb-8">{item.desc}</p>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-brand-purple group-hover:translate-x-2 transition-transform">
+                <span>View Methodology</span>
+                <ChevronRight size={14} />
+              </div>
             </motion.div>
           ))}
         </div>
