@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Qalo Suite | Co-operative Wealth Intelligence</title>
+    
+    <!-- Professional Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                purple: '#800080',
+                purpleDark: '#4a004a',
+                green: '#228B22',
+                gold: '#DAA520',
+                goldDark: '#b8860b',
+                navy: '#010409',
+                slate: {
+                  50: '#f8fafc',
+                  900: '#0f172a',
+                  950: '#020617'
+                }
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Poppins', 'sans-serif']
+            },
+            boxShadow: {
+              'premium': '0 20px 50px -12px rgba(128, 0, 128, 0.15)',
+              'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
+              'card': '0 10px 30px -5px rgba(0, 0, 0, 0.05)'
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sar: env(safe-area-inset-right);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+      }
+      
+      body {
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: var(--sat) var(--sar) var(--sab) var(--sal);
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        overflow-x: hidden;
+      }
+
+      .glass-effect {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      /* High Fidelity Input Styling */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 99px;
+        background: #f1f5f9;
+        outline: none;
+      }
+
+      .dark input[type="range"] {
+        background: #1e293b;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #ffffff;
+        cursor: pointer;
+        border: 2px solid #800080;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+      }
+
+      @media (min-width: 1024px) {
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+          background: #e2e8f0; 
+          border-radius: 10px; 
+          border: 3px solid transparent;
+          background-clip: content-box;
+        }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+      }
+    </style>
+
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "recharts": "https://esm.sh/recharts@2.15.0?external=react,react-dom",
+    "lucide-react": "https://esm.sh/lucide-react@0.468.0?external=react,react-dom",
+    "framer-motion": "https://esm.sh/framer-motion@11.15.0?external=react,react-dom",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+  </head>
+  <body class="bg-slate-50 dark:bg-brand-navy text-slate-900 dark:text-slate-100 antialiased selection:bg-brand-purple/20">
+    <div id="root"></div>
+  </body>
+</html>
